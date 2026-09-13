@@ -6,7 +6,8 @@ Hỗ trợ Native Tool Calling và chuyển đổi linh hoạt qua biến môi t
 import os
 import sys
 import json
-from typing import Dict, Any, List
+import re
+from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 
 if sys.stdout.encoding != 'utf-8':
@@ -22,8 +23,30 @@ class BaseLLMProvider:
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         raise NotImplementedError
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = "",
+        tool_history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         raise NotImplementedError
+
+
+def _prompt_with_tool_history(
+    prompt: str,
+    tool_history: Optional[List[Dict[str, Any]]],
+) -> str:
+    """Bổ sung các Observation cũ vào prompt cho provider stateless."""
+    if not tool_history:
+        return prompt
+    history_json = json.dumps(tool_history, ensure_ascii=False)
+    return (
+        f"Yêu cầu ban đầu: {prompt}\n\n"
+        f"Lịch sử Tool Call và Observation: {history_json}\n\n"
+        "Hãy không lặp lại action đã thành công. Nếu đã đủ dữ liệu, "
+        "hãy trả lời cuối cùng bằng văn bản."
+    )
 
 
 class MockOfflineProvider(BaseLLMProvider):
@@ -34,30 +57,120 @@ class MockOfflineProvider(BaseLLMProvider):
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         return f"[Mock Chatbot Response]: Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. (Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = "",
+        tool_history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
-            return {
-                "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
-            }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
-            return {
-                "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
-            }
-        else:
+
+        history = tool_history or []
+        completed_actions = {
+            item.get("arguments", {}).get("action")
+            for item in history
+            if item.get("observation", {}).get("status") == "SUCCESS"
+        }
+        if history and history[-1].get("observation", {}).get("status") != "SUCCESS":
+            observation = history[-1]["observation"]
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": observation.get("message") or observation.get("error") or "Không thể hoàn tất yêu cầu.",
+                "thought": "Tool báo lỗi; tôi phản hồi theo Observation và không bịa dữ liệu.",
             }
+
+        employee_match = re.search(r"nv\d{7}", prompt_lower)
+        employee_id = employee_match.group(0).upper() if employee_match else ""
+        is_multi_step = (
+            "chính sách" in prompt_lower
+            and "phép" in prompt_lower
+            and ("tạo" in prompt_lower or "đơn" in prompt_lower)
+        )
+        wants_creation = "tạo" in prompt_lower or "xin nghỉ" in prompt_lower
+        wants_policy = "chính sách" in prompt_lower or "bảo hiểm" in prompt_lower
+        wants_balance = "còn lại" in prompt_lower or "số ngày phép" in prompt_lower
+
+        if "quy trình" in prompt_lower and not employee_id and not history:
+            return {
+                "type": "text",
+                "content": (
+                    "[Mock Agent Response]: Quy trình chung gồm chọn loại nghỉ, "
+                    "nhập thời gian và lý do, sau đó gửi đơn cho quản lý phê duyệt."
+                ),
+                "thought": "Câu hỏi chung về quy trình HR, không cần gọi Tool.",
+            }
+
+        leave_type = "ốm đau" if "ốm" in prompt_lower else "phép năm"
+        date_matches = re.findall(r"(\d{1,2})/(\d{1,2})/(\d{4})", prompt)
+        iso_dates = [f"{year}-{month.zfill(2)}-{day.zfill(2)}" for day, month, year in date_matches]
+
+        def tool_call(action: str, extra_arguments: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+            arguments = {"action": action, "employee_id": employee_id}
+            arguments.update(extra_arguments or {})
+            return {
+                "type": "tool_call",
+                "tool_name": "manage_employee_leave",
+                "arguments": arguments,
+                "thought": f"Cần thực hiện nghiệp vụ HR '{action}'.",
+            }
+
+        if is_multi_step:
+            if "insurance_policy_query" not in completed_actions:
+                return tool_call("insurance_policy_query", {"leave_type": leave_type})
+            if "leave_balance_query" not in completed_actions:
+                return tool_call("leave_balance_query")
+            if "create_leave_request" not in completed_actions:
+                if len(iso_dates) < 2:
+                    return {
+                        "type": "text",
+                        "content": "Vui lòng cung cấp đủ ngày bắt đầu và ngày kết thúc.",
+                        "thought": "Thiếu khoảng ngày để tạo đơn.",
+                    }
+                return tool_call("create_leave_request", {
+                    "leave_type": leave_type,
+                    "start_date": iso_dates[0],
+                    "end_date": iso_dates[1],
+                    "reason": "Nghỉ ốm theo yêu cầu của nhân viên.",
+                })
+        elif wants_creation and "create_leave_request" not in completed_actions:
+            if not employee_id or len(iso_dates) < 2:
+                return {
+                    "type": "text",
+                    "content": "Vui lòng cung cấp mã nhân viên và khoảng ngày nghỉ.",
+                    "thought": "Thiếu dữ liệu bắt buộc để tạo đơn.",
+                }
+            return tool_call("create_leave_request", {
+                "leave_type": leave_type,
+                "start_date": iso_dates[0],
+                "end_date": iso_dates[1],
+                "reason": "Về quê giải quyết việc gia đình." if "gia đình" in prompt_lower else "Nghỉ theo yêu cầu của nhân viên.",
+            })
+        elif wants_policy and "insurance_policy_query" not in completed_actions:
+            return tool_call("insurance_policy_query", {"leave_type": leave_type})
+        elif wants_balance and "leave_balance_query" not in completed_actions:
+            return tool_call("leave_balance_query")
+
+        if history:
+            messages = [
+                item.get("observation", {}).get("message", "")
+                for item in history
+                if item.get("observation", {}).get("message")
+            ]
+            return {
+                "type": "text",
+                "content": " ".join(messages),
+                "thought": "Đã có đủ Observation để tổng hợp câu trả lời.",
+            }
+
+        return {
+            "type": "text",
+            "content": (
+                "[Mock Agent Response]: Quy trình chung gồm chọn loại nghỉ, "
+                "nhập thời gian và lý do, sau đó gửi đơn cho quản lý phê duyệt."
+            ),
+            "thought": "Câu hỏi chung về quy trình HR, không cần gọi Tool.",
+        }
 
 
 class GeminiProvider(BaseLLMProvider):
@@ -78,10 +191,16 @@ class GeminiProvider(BaseLLMProvider):
         except Exception as e:
             return f"[Gemini Exception]: {str(e)}"
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = "",
+        tool_history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
             print("ℹ️ [Gemini Provider]: Chưa tìm thấy GEMINI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt, tool_history)
         
         try:
             from google import genai
@@ -109,7 +228,7 @@ class GeminiProvider(BaseLLMProvider):
 
             response = client.models.generate_content(
                 model=self.model_name,
-                contents=prompt,
+                contents=_prompt_with_tool_history(prompt, tool_history),
                 config=config
             )
 
@@ -132,7 +251,7 @@ class GeminiProvider(BaseLLMProvider):
 
         except Exception as e:
             print(f"⚠️ [Gemini API Warning]: Không thể kết nối live API ({str(e)}). Tự động fallback về Mock.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt, tool_history)
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -156,10 +275,16 @@ class OpenAIProvider(BaseLLMProvider):
         except Exception as e:
             return f"[OpenAI Exception]: {str(e)}"
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = "",
+        tool_history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         if not self.api_key or self.api_key == "your_openai_api_key_here":
             print("ℹ️ [OpenAI Provider]: Chưa tìm thấy OPENAI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt, tool_history)
 
         try:
             from openai import OpenAI
@@ -181,7 +306,7 @@ class OpenAIProvider(BaseLLMProvider):
             messages = []
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
+            messages.append({"role": "user", "content": _prompt_with_tool_history(prompt, tool_history)})
 
             response = client.chat.completions.create(
                 model=self.model_name,
@@ -208,7 +333,7 @@ class OpenAIProvider(BaseLLMProvider):
                 }
         except Exception as e:
             print(f"⚠️ [OpenAI API Warning]: Không thể kết nối live API ({str(e)}). Tự động fallback về Mock.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt, tool_history)
 
 
 def get_llm_provider() -> BaseLLMProvider:

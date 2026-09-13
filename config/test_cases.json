@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "Chào bạn, bạn có thể giới thiệu quy trình xin nghỉ phép chung tại VinFast không?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ System Prompt, không cần gọi bất kỳ Tool nào.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Tra cứu giúp tôi số ngày phép năm còn lại của nhân viên mã NV2026001.",
+    "expected_behavior": "Agent nhận diện nhu cầu tra cứu, tự động phát sinh Tool Call 'manage_employee_leave' với action='leave_balance_query', employee_id='NV2026001'.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "type": "leave_request_creation",
+    "question": "Tôi muốn xin nghỉ phép năm từ ngày 20/10/2026 đến 22/10/2026 để về quê giải quyết việc gia đình, mã nhân viên của tôi là NV2026001. Hãy tạo đơn xin nghỉ giúp tôi.",
+    "expected_behavior": "Agent tự động phát sinh Tool Call 'manage_employee_leave' với action='create_leave_request', employee_id='NV2026001', leave_type='phép năm', start_date='2026-10-20', end_date='2026-10-22', reason tương ứng.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC04",
+    "type": "multi_step_reasoning",
+    "question": "Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.",
+    "expected_behavior": "Agent gọi 'manage_employee_leave' theo chuỗi ReAct: (1) action='insurance_policy_query' với leave_type='ốm đau', (2) action='leave_balance_query', (3) action='create_leave_request', sau đó tổng hợp chính sách, số phép và kết quả tạo đơn.",
+    "complexity": "High"
+  },
+  {
+    "id": "TC05",
+    "type": "edge_case_handling",
+    "question": "Tra cứu giúp tôi số ngày phép còn lại của nhân viên mã NV9999999.",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và đưa ra phản hồi lịch sự, chính xác báo không tìm thấy mã nhân viên, không bịa đặt dữ liệu.",
+    "complexity": "Medium"
+  }
+]

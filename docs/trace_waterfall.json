@@ -1,29 +1,190 @@
 [
   {
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "query": "Chào bạn, bạn có thể giới thiệu quy trình xin nghỉ phép chung tại VinFast không?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
+    "thought": "Câu hỏi chung về quy trình HR, không cần gọi Tool.",
+    "output": "[Mock Agent Response]: Quy trình chung gồm chọn loại nghỉ, nhập thời gian và lý do, sau đó gửi đơn cho quản lý phê duyệt.",
+    "latency_ms": 1547.75
   },
   {
     "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Tra cứu giúp tôi số ngày phép năm còn lại của nhân viên mã NV2026001.",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "manage_employee_leave",
     "arguments": {
-      "student_id": "SV2026001"
+      "action": "leave_balance_query",
+      "employee_id": "NV2026001"
     },
-    "observation": {},
-    "latency_ms": 799.12
+    "observation": {
+      "status": "SUCCESS",
+      "action": "leave_balance_query",
+      "employee_id": "NV2026001",
+      "employee": {
+        "full_name": "Nguyễn Văn An",
+        "department": "Sản xuất",
+        "annual_leave_remaining": 12
+      },
+      "annual_leave_remaining": 12,
+      "message": "Nhân viên NV2026001 còn 12 ngày phép năm."
+    },
+    "latency_ms": 416.65
   },
   {
     "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Tra cứu giúp tôi số ngày phép năm còn lại của nhân viên mã NV2026001.",
     "action_type": "FINAL_ANSWER",
-    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
-    "latency_ms": 10.0
+    "thought": "Đã có đủ Observation để tổng hợp câu trả lời.",
+    "output": "Nhân viên NV2026001 còn 12 ngày phép năm.",
+    "latency_ms": 318.54
+  },
+  {
+    "step": 1,
+    "query": "Tôi muốn xin nghỉ phép năm từ ngày 20/10/2026 đến 22/10/2026 để về quê giải quyết việc gia đình, mã nhân viên của tôi là NV2026001. Hãy tạo đơn xin nghỉ giúp tôi.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "manage_employee_leave",
+    "arguments": {
+      "action": "create_leave_request",
+      "employee_id": "NV2026001",
+      "leave_type": "phép năm",
+      "start_date": "2026-10-20",
+      "end_date": "2026-10-22",
+      "reason": "Về quê giải quyết việc gia đình."
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "action": "create_leave_request",
+      "request_id": "LR-NV2026001-20261020-20261022",
+      "employee_id": "NV2026001",
+      "employee_name": "Nguyễn Văn An",
+      "leave_type": "phép năm",
+      "start_date": "2026-10-20",
+      "end_date": "2026-10-22",
+      "working_days": 3,
+      "reason": "Về quê giải quyết việc gia đình.",
+      "deducted_from_annual_leave": true,
+      "annual_leave_remaining": 12,
+      "projected_annual_leave_remaining": 9,
+      "message": "Đã tạo đơn LR-NV2026001-20261020-20261022 cho NV2026001: nghỉ phép năm 3 ngày làm việc."
+    },
+    "latency_ms": 275.03
+  },
+  {
+    "step": 2,
+    "query": "Tôi muốn xin nghỉ phép năm từ ngày 20/10/2026 đến 22/10/2026 để về quê giải quyết việc gia đình, mã nhân viên của tôi là NV2026001. Hãy tạo đơn xin nghỉ giúp tôi.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Đã có đủ Observation để tổng hợp câu trả lời.",
+    "output": "Đã tạo đơn LR-NV2026001-20261020-20261022 cho NV2026001: nghỉ phép năm 3 ngày làm việc.",
+    "latency_ms": 279.56
+  },
+  {
+    "step": 1,
+    "query": "Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "manage_employee_leave",
+    "arguments": {
+      "action": "insurance_policy_query",
+      "employee_id": "NV2026002",
+      "leave_type": "ốm đau"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "action": "insurance_policy_query",
+      "employee_id": "NV2026002",
+      "leave_type": "ốm đau",
+      "policy": {
+        "benefit": "Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện.",
+        "deducted_from_annual_leave": false,
+        "note": "Nghỉ ốm không trừ phép năm trong mô phỏng này."
+      },
+      "message": "Chính sách mock cho nghỉ ốm đau: Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện. Nghỉ ốm không trừ phép năm trong mô phỏng này."
+    },
+    "latency_ms": 484.16
+  },
+  {
+    "step": 2,
+    "query": "Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "manage_employee_leave",
+    "arguments": {
+      "action": "leave_balance_query",
+      "employee_id": "NV2026002"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "action": "leave_balance_query",
+      "employee_id": "NV2026002",
+      "employee": {
+        "full_name": "Trần Thị Bình",
+        "department": "Kỹ thuật",
+        "annual_leave_remaining": 8
+      },
+      "annual_leave_remaining": 8,
+      "message": "Nhân viên NV2026002 còn 8 ngày phép năm."
+    },
+    "latency_ms": 316.7
+  },
+  {
+    "step": 3,
+    "query": "Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "manage_employee_leave",
+    "arguments": {
+      "action": "create_leave_request",
+      "employee_id": "NV2026002",
+      "leave_type": "ốm đau",
+      "start_date": "2026-09-15",
+      "end_date": "2026-09-17",
+      "reason": "Nghỉ ốm theo yêu cầu của nhân viên."
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "action": "create_leave_request",
+      "request_id": "LR-NV2026002-20260915-20260917",
+      "employee_id": "NV2026002",
+      "employee_name": "Trần Thị Bình",
+      "leave_type": "ốm đau",
+      "start_date": "2026-09-15",
+      "end_date": "2026-09-17",
+      "working_days": 3,
+      "reason": "Nghỉ ốm theo yêu cầu của nhân viên.",
+      "deducted_from_annual_leave": false,
+      "annual_leave_remaining": 8,
+      "projected_annual_leave_remaining": 8,
+      "message": "Đã tạo đơn LR-NV2026002-20260915-20260917 cho NV2026002: nghỉ ốm đau 3 ngày làm việc."
+    },
+    "latency_ms": 230.32
+  },
+  {
+    "step": 4,
+    "query": "Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Đã có đủ Observation để tổng hợp câu trả lời.",
+    "output": "Chính sách mock cho nghỉ ốm đau: Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện. Nghỉ ốm không trừ phép năm trong mô phỏng này. Nhân viên NV2026002 còn 8 ngày phép năm. Đã tạo đơn LR-NV2026002-20260915-20260917 cho NV2026002: nghỉ ốm đau 3 ngày làm việc.",
+    "latency_ms": 236.01
+  },
+  {
+    "step": 1,
+    "query": "Tra cứu giúp tôi số ngày phép còn lại của nhân viên mã NV9999999.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "manage_employee_leave",
+    "arguments": {
+      "action": "leave_balance_query",
+      "employee_id": "NV9999999"
+    },
+    "observation": {
+      "status": "NOT_FOUND",
+      "employee_id": "NV9999999",
+      "message": "Không tìm thấy dữ liệu nhân viên có mã 'NV9999999'."
+    },
+    "latency_ms": 236.48
+  },
+  {
+    "step": 2,
+    "query": "Tra cứu giúp tôi số ngày phép còn lại của nhân viên mã NV9999999.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tool báo lỗi; tôi phản hồi theo Observation và không bịa dữ liệu.",
+    "output": "Không tìm thấy dữ liệu nhân viên có mã 'NV9999999'.",
+    "latency_ms": 310.94
   }
 ]
