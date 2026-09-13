@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trợ lý Nhân sự VinFast</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#eef2f5; --surface:#ffffff; --surface-2:#f5f7f9; --border:#dbe2e8;
+    --ink:#152233; --ink-soft:#54677a;
+    --navy:#1c3a5e; --navy-soft:#e7edf3; --navy-fill:#2a5f8f;
+    --accent:#b5691a; --accent-soft:#f6e6d3;
+    --success:#2f7d5c; --success-soft:#dcf1e7;
+    --danger:#b1433f; --danger-soft:#f7e1df;
+    --muted:#8b97a3; --muted-soft:#eceff2;
+    --shadow:0 1px 3px rgba(21,34,51,.10), 0 6px 20px rgba(21,34,51,.06);
+    --r-s:8px; --r-m:14px; --r-l:22px;
+    --maxw:1180px;
+    --font-display:"Be Vietnam Pro","Segoe UI",sans-serif;
+    --font-body:"Plus Jakarta Sans","Segoe UI",sans-serif;
+    --font-mono:"JetBrains Mono",Consolas,"SFMono-Regular",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10151c; --surface:#1a2129; --surface-2:#141b22; --border:#2a333d;
+      --ink:#e8edf2; --ink-soft:#9fb0bf;
+      --navy:#8fb4dd; --navy-soft:#1c2b3d;
+      --accent:#e0a24f; --accent-soft:#3a2c18;
+      --success:#5cbd8f; --success-soft:#163326;
+      --danger:#e08a86; --danger-soft:#3a1f1e;
+      --muted:#6b7885; --muted-soft:#1c232b;
+      --shadow:0 1px 2px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10151c; --surface:#1a2129; --surface-2:#141b22; --border:#2a333d;
+    --ink:#e8edf2; --ink-soft:#9fb0bf;
+    --navy:#8fb4dd; --navy-soft:#1c2b3d;
+    --accent:#e0a24f; --accent-soft:#3a2c18;
+    --success:#5cbd8f; --success-soft:#163326;
+    --danger:#e08a86; --danger-soft:#3a1f1e;
+    --muted:#6b7885; --muted-soft:#1c232b;
+    --shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:var(--font-display); color:var(--ink); margin:0; text-wrap:balance;}
+  p{margin:0;}
+  code,.mono{font-family:var(--font-mono);}
+  .page{max-width:var(--maxw); margin:0 auto; padding-inline:20px;}
+  section{scroll-margin-top:76px;}
+  ::selection{background:var(--accent-soft); color:var(--ink);}
+
+  /* ===== Top nav ===== */
+  .topnav{position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--border);}
+  .topnav-inner{max-width:var(--maxw); margin:0 auto; padding:10px 20px; display:flex; gap:8px; align-items:center; overflow-x:auto;}
+  .topnav-brand{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--navy); white-space:nowrap; margin-right:6px;}
+  .navlink{white-space:nowrap; font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; padding:7px 12px; border-radius:999px; border:1px solid transparent;}
+  .navlink:hover{color:var(--ink); border-color:var(--border);}
+  .navlink.active{background:var(--navy-fill); color:#fff; border-color:var(--navy-fill);}
+
+  /* ===== Hero ===== */
+  .hero{padding:44px 0 30px;}
+  .eyebrow{display:inline-block; font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); background:var(--accent-soft); padding:5px 12px; border-radius:999px;}
+  .hero h1{font-size:clamp(30px,5vw,46px); font-weight:800; letter-spacing:-.01em; margin-top:16px;}
+  .hero .sub{max-width:62ch; margin-top:12px; font-size:17px; color:var(--ink-soft);}
+  .hero .meta{margin-top:14px; font-size:13.5px; color:var(--ink-soft);}
+  .hero .meta strong{color:var(--ink); font-weight:600;}
+  .stat-row{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:26px;}
+  .stat-tile{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-m); padding:16px 18px; box-shadow:var(--shadow);}
+  .stat-num{font-family:var(--font-display); font-weight:800; font-size:28px; font-variant-numeric:tabular-nums; color:var(--navy);}
+  .stat-label{font-size:12.5px; color:var(--ink-soft); margin-top:4px; font-weight:600;}
+  @media (max-width:640px){ .stat-row{grid-template-columns:1fr;} }
+
+  /* ===== Section shell ===== */
+  .section{padding:56px 0;}
+  .section + .section{border-top:1px solid var(--border);}
+  .section-kicker{display:flex; align-items:baseline; gap:10px; margin-bottom:8px;}
+  .section-num{font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--accent);}
+  .section h2{font-size:clamp(22px,3vw,30px); font-weight:700;}
+  .section .section-sub{max-width:70ch; color:var(--ink-soft); margin-top:8px; font-size:15.5px;}
+
+  /* ===== Cards / generic ===== */
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-m); box-shadow:var(--shadow);}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:26px; align-items:start;}
+  @media (max-width:800px){ .grid-2{grid-template-columns:1fr;} }
+
+  .topic-card{padding:24px;}
+  .topic-tag{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--navy); background:var(--navy-soft); padding:4px 10px; border-radius:999px; display:inline-block;}
+  .topic-quote{margin-top:14px; font-family:var(--font-display); font-weight:600; font-size:19px; line-height:1.45;}
+
+  .reason-list{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:14px;}
+  .reason-list li{display:flex; gap:12px; align-items:flex-start;}
+  .reason-num{flex:none; width:26px; height:26px; border-radius:50%; background:var(--accent-soft); color:var(--accent); font-family:var(--font-mono); font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center;}
+  .reason-list p{font-size:15px; color:var(--ink);}
+
+  blockquote.callout{margin:28px 0 0; padding:18px 22px; border-left:3px solid var(--accent); background:var(--surface); border-radius:0 var(--r-s) var(--r-s) 0; box-shadow:var(--shadow);}
+  blockquote.callout p{font-size:15.5px; color:var(--ink-soft); font-style:italic;}
+  blockquote.callout cite{display:block; margin-top:10px; font-size:12.5px; font-style:normal; color:var(--ink-soft); font-family:var(--font-mono);}
+
+  /* ===== Section 2: Agentic Fit ===== */
+  .verdict{padding:26px 24px; display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin-top:24px;}
+  .verdict-num{font-family:var(--font-display); font-weight:800; font-size:52px; color:var(--success); font-variant-numeric:tabular-nums; line-height:1;}
+  .verdict-num small{font-size:22px; color:var(--ink-soft); font-weight:600;}
+  .verdict-copy{flex:1; min-width:240px;}
+  .verdict-label{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--success);}
+  .verdict-text{margin-top:6px; font-size:14.5px; color:var(--ink-soft); max-width:60ch;}
+  .verdict-scale{position:relative; height:8px; background:var(--muted-soft); border-radius:999px; margin-top:14px; max-width:340px;}
+  .verdict-scale .fill{position:absolute; inset:0; width:90%; background:var(--success); border-radius:999px;}
+  .verdict-scale .mark{position:absolute; top:-5px; width:2px; height:18px; background:var(--ink-soft);}
+  .verdict-scale .mark.thresh{left:60%;}
+  .verdict-scale .mark-label{position:absolute; top:16px; font-size:10.5px; color:var(--ink-soft); font-family:var(--font-mono); white-space:nowrap;}
+
+  .criteria{display:flex; flex-direction:column; gap:16px; margin-top:22px;}
+  .criterion{padding:18px 20px;}
+  .criterion-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .criterion-name{font-weight:700; font-size:15.5px;}
+  .criterion-score{font-family:var(--font-mono); font-weight:600; font-size:14px; color:var(--ink-soft);}
+  .dots{display:flex; gap:5px; margin-top:8px;}
+  .dot{width:26px; height:9px; border-radius:5px; background:var(--muted-soft);}
+  .dot.filled{background:var(--accent);}
+  .criterion-body{margin-top:10px; font-size:14.5px; color:var(--ink-soft); max-width:75ch;}
+  .criterion-body code{background:var(--surface-2); border:1px solid var(--border); border-radius:5px; padding:1px 6px; font-size:13px; color:var(--ink);}
+  .inset-example{margin-top:12px; padding:12px 14px; background:var(--surface-2); border-radius:var(--r-s); font-size:13.5px; border:1px dashed var(--border);}
+
+  /* ===== Section 3: Diagrams ===== */
+  .fig{margin-top:24px;}
+  .fig-label{font-size:13px; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;}
+  .svg-wrap{overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-m); box-shadow:var(--shadow); padding:14px;}
+  .svg-wrap svg{display:block; min-width:640px; width:100%; height:auto; color:var(--ink);}
+  figcaption{margin-top:10px; font-size:13.5px; color:var(--ink-soft); max-width:80ch;}
+  .node-box{fill:var(--surface); stroke:var(--border);}
+  .node-box.terminal{fill:var(--success-soft); stroke:var(--success);}
+  .node-box.muted{fill:var(--muted-soft); stroke:var(--border);}
+  .node-title{font-family:var(--font-display); font-weight:700; font-size:13.5px; fill:var(--ink);}
+  .node-sub{font-family:var(--font-mono); font-size:10.5px; fill:var(--ink-soft);}
+  .flow-line{stroke:var(--ink-soft); stroke-width:2; fill:none;}
+  .flow-line.loop{stroke:var(--accent); stroke-width:2.2; stroke-dasharray:5 5;}
+  .branch-label{font-size:11px; font-weight:600; fill:var(--ink-soft);}
+  .lane-label{font-size:11.5px; font-weight:700; letter-spacing:.03em; fill:var(--ink-soft); text-transform:uppercase;}
+
+  /* ===== Section 4: Tools ===== */
+  .tool-head{margin-top:22px; padding:20px 22px; display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
+  .tool-name{font-family:var(--font-mono); font-weight:600; font-size:17px; background:var(--navy-soft); color:var(--navy); padding:8px 14px; border-radius:var(--r-s); flex:none;}
+  .tool-desc{font-size:14.5px; color:var(--ink-soft); max-width:60ch;}
+  .tool-common{margin-left:auto; font-size:12.5px; color:var(--ink-soft); font-family:var(--font-mono);}
+  .tool-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:18px;}
+  @media (max-width:900px){ .tool-grid{grid-template-columns:1fr;} }
+  .tool-card{padding:0; overflow:hidden; display:flex; flex-direction:column;}
+  .tool-card .stripe{height:5px;}
+  .tool-card .body{padding:18px 18px 20px; display:flex; flex-direction:column; gap:12px; flex:1;}
+  .tool-card h3{font-family:var(--font-mono); font-size:15px; font-weight:600;}
+  .tool-card .purpose{font-size:14px; color:var(--ink); font-weight:500;}
+  .param-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .param-chip{font-family:var(--font-mono); font-size:11.5px; padding:3px 8px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border); color:var(--ink-soft);}
+  .param-chip.req{color:var(--accent); border-color:var(--accent-soft); background:var(--accent-soft);}
+  .mini-table{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:2px;}
+  .mini-table th,.mini-table td{padding:6px 8px; text-align:left; border-bottom:1px solid var(--border);}
+  .mini-table th{color:var(--ink-soft); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em;}
+  .mini-table td.num{font-family:var(--font-mono); text-align:right; font-variant-numeric:tabular-nums;}
+  .example-chip{font-family:var(--font-mono); font-size:12px; background:var(--success-soft); color:var(--success); padding:5px 9px; border-radius:6px; align-self:flex-start;}
+  .tool-footnote{margin-top:16px; font-size:13px; color:var(--ink-soft); font-style:italic;}
+
+  /* ===== Section 5: Demo ===== */
+  .scenario-row{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+  .scenario-btn{font-family:var(--font-body); font-weight:600; font-size:13.5px; padding:11px 16px; border-radius:var(--r-s); border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:8px;}
+  .scenario-btn:hover{border-color:var(--accent);}
+  .scenario-btn.active{background:var(--navy-fill); border-color:var(--navy-fill); color:#fff;}
+  .complexity-badge{font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent);}
+  .scenario-btn.active .complexity-badge{background:rgba(255,255,255,.2); color:#fff;}
+
+  .demo-layout{display:grid; grid-template-columns:300px 1fr; gap:20px; margin-top:20px; align-items:start;}
+  @media (max-width:860px){ .demo-layout{grid-template-columns:1fr;} }
+  .query-card{padding:20px; position:sticky; top:86px;}
+  @media (max-width:860px){ .query-card{position:static;} }
+  .chip-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+  .chip{font-family:var(--font-mono); font-size:11px; padding:3px 8px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border); color:var(--ink-soft);}
+  .chat-bubble{background:var(--navy-soft); color:var(--ink); padding:14px 16px; border-radius:14px 14px 14px 4px; font-size:14px; line-height:1.55;}
+  .live-panel{display:flex; flex-direction:column; gap:12px; margin-bottom:18px; padding-bottom:18px; border-bottom:1px dashed var(--border);}
+  .live-field{display:flex; flex-direction:column; gap:6px;}
+  .live-field select, .live-field textarea{font-family:var(--font-body); font-size:13.5px; padding:9px 10px; border-radius:var(--r-s); border:1px solid var(--border); background:var(--surface-2); color:var(--ink); resize:vertical; width:100%;}
+  .live-field select:focus, .live-field textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .live-employee-info{font-size:12.5px; color:var(--ink-soft);}
+  .suggestion-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .suggestion-chip{font-family:var(--font-body); font-size:11.5px; font-weight:600; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--ink-soft); cursor:pointer; text-align:left;}
+  .suggestion-chip:hover{border-color:var(--accent); color:var(--accent);}
+  .live-error{font-size:12.5px; color:var(--danger); font-weight:600;}
+  .live-note{font-size:12px; color:var(--ink-soft); font-style:italic;}
+  .controls{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
+  .ctrl-btn{font-family:var(--font-body); font-weight:600; font-size:13px; padding:9px 12px; border-radius:var(--r-s); border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer;}
+  .ctrl-btn:hover:not(:disabled){border-color:var(--accent); color:var(--accent);}
+  .ctrl-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .ctrl-btn.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .progress-line{display:flex; justify-content:space-between; align-items:center; margin-top:16px; font-size:12.5px; color:var(--ink-soft);}
+  .total-tile{margin-top:12px; padding:12px 14px; background:var(--surface-2); border-radius:var(--r-s); display:flex; justify-content:space-between; align-items:baseline;}
+  .total-tile .num{font-family:var(--font-mono); font-weight:600; font-size:18px; color:var(--navy); font-variant-numeric:tabular-nums;}
+
+  .step-list{display:flex; flex-direction:column; gap:14px;}
+  .step-card{padding:0; overflow:hidden; animation:rise .3s ease both;}
+  @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ .step-card{animation:none;} }
+  .step-card .head{display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface-2); border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .step-idx{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:2px 7px;}
+  .step-kind{font-weight:700; font-size:13.5px;}
+  .latency-badge{margin-left:auto; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .step-card .content{padding:14px 16px; display:flex; flex-direction:column; gap:10px;}
+  .block-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .kv-list{display:flex; flex-direction:column; gap:3px; font-family:var(--font-mono); font-size:12.5px;}
+  .kv-list .kv{display:flex; gap:8px;}
+  .kv-list .k{color:var(--ink-soft); min-width:110px;}
+  .kv-list .v{color:var(--ink); font-weight:500;}
+  .status-badge{font-family:var(--font-mono); font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; display:inline-block;}
+  .status-badge.success{background:var(--success-soft); color:var(--success);}
+  .status-badge.danger{background:var(--danger-soft); color:var(--danger);}
+  .obs-message{font-size:14px;}
+  .obs-chips{display:flex; gap:6px; flex-wrap:wrap;}
+  .obs-chip{font-family:var(--font-mono); font-size:11.5px; padding:3px 8px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px;}
+  .final-block{background:var(--success-soft); border-radius:var(--r-s); padding:12px 14px;}
+  .final-block .obs-message{color:var(--success); font-weight:600;}
+  details.raw{margin-top:2px;}
+  details.raw summary{cursor:pointer; font-size:12px; color:var(--ink-soft); font-weight:600;}
+  details.raw pre{margin-top:8px; background:var(--surface-2); border-radius:var(--r-s); padding:10px 12px; overflow-x:auto; font-size:11.5px; font-family:var(--font-mono); line-height:1.5;}
+  .empty-hint{padding:26px; text-align:center; color:var(--ink-soft); font-size:14px; border:1px dashed var(--border); border-radius:var(--r-m);}
+
+  .footnote{margin-top:20px; font-size:13px; color:var(--ink-soft); font-style:italic; max-width:75ch;}
+
+  /* ===== Footer ===== */
+  .site-footer{padding:36px 0 50px; border-top:1px solid var(--border); font-size:13px; color:var(--ink-soft); display:flex; flex-direction:column; gap:4px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav">
+    <div class="topnav-inner">
+      <span class="topnav-brand">🧭 HR Agent Demo</span>
+      <a class="navlink" href="#s1">1 · Đề tài</a>
+      <a class="navlink" href="#s2">2 · Agentic Fit</a>
+      <a class="navlink" href="#s3">3 · Kiến trúc</a>
+      <a class="navlink" href="#s4">4 · Tool</a>
+      <a class="navlink" href="#s5">5 · Demo trực tiếp</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <span class="eyebrow">Bài Lab 3 · Chatbot vs ReAct Agent (MCP Enhanced)</span>
+    <h1>Trợ lý Nhân sự VinFast</h1>
+    <p class="sub">Minh hoạ bằng dữ liệu thật đã ghi log — từ một câu hỏi rời rạc đến chuỗi hành động MCP có kiểm chứng, thay vì suy đoán.</p>
+    <p class="meta"><strong>Nguyễn Anh Tuấn</strong> · 2A202602700 · VinUni AI Fundamentals — Day 03</p>
+    <div class="stat-row">
+      <div class="stat-tile"><div class="stat-num">18/20</div><div class="stat-label">Điểm Agentic Fit</div></div>
+      <div class="stat-tile"><div class="stat-num">5/5</div><div class="stat-label">Test case đạt</div></div>
+      <div class="stat-tile"><div class="stat-num">1</div><div class="stat-label">Tool MCP · 3 nghiệp vụ</div></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= SECTION 1 ================= -->
+    <section id="s1" class="section">
+      <div class="section-kicker"><span class="section-num">01</span></div>
+      <h2>Đề tài &amp; lý do lựa chọn</h2>
+      <p class="section-sub">Chọn một bài toán HR đủ thật để cần suy luận nhiều bước, nhưng đủ gọn để mock trong 180 phút lab.</p>
+
+      <div class="grid-2">
+        <div class="card topic-card">
+          <span class="topic-tag">Đề tài đã chọn · Gợi ý 2.1</span>
+          <p class="topic-quote">“Trợ lý Nhân sự VinFast (HR Assistant): Tra cứu ngày phép còn lại, chính sách bảo hiểm và tạo đơn xin nghỉ phép.”</p>
+        </div>
+        <div class="card" style="padding:24px;">
+          <h3 style="font-family:var(--font-display); font-size:16px; font-weight:700;">Vì sao chọn đề tài này?</h3>
+          <ul class="reason-list">
+            <li><span class="reason-num">1</span><p>Câu trả lời đúng luôn cần tổng hợp từ hai nguồn dữ liệu tách biệt — số phép năm còn lại và chính sách bảo hiểm theo loại nghỉ — trước khi tư vấn.</p></li>
+            <li><span class="reason-num">2</span><p>Cùng một câu hỏi bề mặt nhưng rẽ nhánh xử lý khác nhau: nghỉ ốm dẫn chính sách bảo hiểm, nghỉ phép năm phải đối chiếu số dư trước khi duyệt.</p></li>
+            <li><span class="reason-num">3</span><p>Có một tác vụ ghi dữ liệu thật (tạo đơn xin nghỉ), không chỉ tra cứu — buộc Agent phải hành động, không chỉ trả lời.</p></li>
+            <li><span class="reason-num">4</span><p>Đủ gọn để mô phỏng trong 180 phút lab, nhưng đủ sát với một quy trình HR vận hành hằng ngày tại VinFast.</p></li>
+          </ul>
+        </div>
+      </div>
+
+      <blockquote class="callout">
+        <p>“Không phải mọi bài toán đều cần đến Agent. Nếu một yêu cầu chỉ là tra cứu FAQ cố định hoặc viết lại văn bản, việc sử dụng Agent sẽ làm tăng thời gian phản hồi và chi phí token không cần thiết. Khung đánh giá Agentic Fit giúp bạn chọn đúng công nghệ phù hợp với bài toán.”</p>
+        <cite>docs/CODELAB.md</cite>
+      </blockquote>
+    </section>
+
+    <!-- ================= SECTION 2 ================= -->
+    <section id="s2" class="section">
+      <div class="section-kicker"><span class="section-num">02</span></div>
+      <h2>Vì sao ReAct Agent phù hợp?</h2>
+      <p class="section-sub">Khung Agentic Fit chấm 4 tiêu chí trên thang 1–5. Ngưỡng khuyến nghị triển khai Agent: 12/20.</p>
+
+      <div class="card verdict">
+        <div class="verdict-num">18<small>/20</small></div>
+        <div class="verdict-copy">
+          <div class="verdict-label">Tổng điểm Agentic Fit</div>
+          <p class="verdict-text">18/20 &gt; ngưỡng 12/20 → Đề tài <strong>"Trợ lý Nhân sự VinFast"</strong> phù hợp triển khai dưới dạng ReAct Agent: cần phối hợp nhiều action trên dữ liệu phép và chính sách bảo hiểm, tổng hợp suy luận rồi mới tạo đơn.</p>
+          <div class="verdict-scale">
+            <div class="fill"></div>
+            <div class="mark thresh"></div>
+            <span class="mark-label" style="left:56%;">ngưỡng 12/20</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="criteria">
+        <div class="card criterion">
+          <div class="criterion-head"><span class="criterion-name">1. Multi-step Reasoning</span><span class="criterion-score">5 / 5</span></div>
+          <div class="dots">
+            <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div>
+          </div>
+          <p class="criterion-body">Agent phải xâu chuỗi nhiều bước: nhận diện loại nghỉ → gọi <code>insurance_policy_query</code> để tra chính sách bảo hiểm → gọi <code>leave_balance_query</code> để tra số phép năm còn lại → tổng hợp hai nguồn dữ liệu để tư vấn → mới gọi <code>create_leave_request</code> để tạo đơn.</p>
+        </div>
+        <div class="card criterion">
+          <div class="criterion-head"><span class="criterion-name">2. Tool Interaction</span><span class="criterion-score">5 / 5</span></div>
+          <div class="dots">
+            <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div>
+          </div>
+          <p class="criterion-body">Toàn bộ dữ liệu cá nhân hoá và chính sách phải lấy từ Observation của MCP Server qua tool <code>manage_employee_leave</code>; LLM không được tự bịa số liệu về số phép hay chính sách.</p>
+        </div>
+        <div class="card criterion">
+          <div class="criterion-head"><span class="criterion-name">3. Dynamic Decision</span><span class="criterion-score">5 / 5</span></div>
+          <div class="dots">
+            <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div>
+          </div>
+          <p class="criterion-body">Nội dung tư vấn và quyết định tạo đơn phụ thuộc trực tiếp vào việc kết hợp Observation từ các action tra cứu.</p>
+          <div class="inset-example">Ví dụ: cùng câu hỏi “tôi muốn nghỉ 5 ngày” — nếu là <strong>nghỉ ốm</strong> ⇒ Agent dẫn chính sách bảo hiểm (không trừ phép năm); nếu là <strong>phép năm</strong> ⇒ phải đối chiếu số dư trước khi tạo đơn.</div>
+        </div>
+        <div class="card criterion">
+          <div class="criterion-head"><span class="criterion-name">4. Long Horizon Goal</span><span class="criterion-score">3 / 5</span></div>
+          <div class="dots">
+            <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <p class="criterion-body">Mục tiêu "tư vấn đúng chế độ + tạo đúng đơn nghỉ phép" cần giữ xuyên suốt qua vài lượt hội thoại, nhưng vẫn là tác vụ kết thúc trong một phiên ngắn — không đòi hỏi Agent duy trì trạng thái/kế hoạch qua nhiều ngày như bài toán hoạch định dài hạn thực sự.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 3 ================= -->
+    <section id="s3" class="section">
+      <div class="section-kicker"><span class="section-num">03</span></div>
+      <h2>Kiến trúc Agent đã xây dựng</h2>
+      <p class="section-sub">Một vòng lặp suy luận có kiểm soát, chạy trên nền một MCP Server mô phỏng.</p>
+
+      <div class="fig">
+        <div class="fig-label">(a) Vòng lặp ReAct — Thought → Action → Observation</div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 780 630" role="img" aria-label="Sơ đồ vòng lặp ReAct: User Query dẫn tới LLM Thought, rẽ nhánh qua quyết định có cần gọi Tool hay không, nếu có thì đi qua Action, MCP Server Execution, Observation rồi quay lại LLM Thought; nếu không thì kết thúc ở Final Answer">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"></path>
+              </marker>
+              <marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"></path>
+              </marker>
+            </defs>
+
+            <rect class="node-box" x="160" y="16" width="280" height="64" rx="12"></rect>
+            <text class="node-title" x="300" y="40" text-anchor="middle">Người dùng đặt câu hỏi</text>
+            <text class="node-sub" x="300" y="58" text-anchor="middle">vd: nghỉ ốm + tra bảo hiểm + tạo đơn</text>
+
+            <line class="flow-line" x1="300" y1="80" x2="300" y2="110" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="160" y="112" width="280" height="70" rx="12"></rect>
+            <text class="node-title" x="300" y="138" text-anchor="middle">LLM Thought</text>
+            <text class="node-sub" x="300" y="156" text-anchor="middle">Đã đủ dữ liệu để trả lời chưa?</text>
+
+            <line class="flow-line" x1="300" y1="182" x2="300" y2="222" marker-end="url(#arrow)"></line>
+
+            <polygon class="node-box" points="300,222 432,266 300,310 168,266"></polygon>
+            <text class="node-title" x="300" y="262" text-anchor="middle" font-size="12.5">Cần gọi</text>
+            <text class="node-title" x="300" y="277" text-anchor="middle" font-size="12.5">Tool?</text>
+
+            <path class="flow-line" d="M432,266 C480,266 500,250 520,240" marker-end="url(#arrow)"></path>
+            <text class="branch-label" x="452" y="252">Không</text>
+
+            <rect class="node-box terminal" x="520" y="224" width="220" height="70" rx="12"></rect>
+            <text class="node-title" x="630" y="252" text-anchor="middle">🏁 Final Answer</text>
+            <text class="node-sub" x="630" y="270" text-anchor="middle">Trả lời tổng hợp cho nhân viên</text>
+
+            <line class="flow-line" x1="300" y1="310" x2="300" y2="346" marker-end="url(#arrow)"></line>
+            <text class="branch-label" x="312" y="332">Có</text>
+
+            <rect class="node-box" x="160" y="348" width="280" height="70" rx="12"></rect>
+            <text class="node-title" x="300" y="374" text-anchor="middle">⚡ Action — đề xuất Tool Call</text>
+            <text class="node-sub" x="300" y="392" text-anchor="middle">manage_employee_leave(action=…)</text>
+
+            <line class="flow-line" x1="300" y1="418" x2="300" y2="452" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="160" y="454" width="280" height="64" rx="12"></rect>
+            <text class="node-title" x="300" y="480" text-anchor="middle">🔌 MCP Server Execution</text>
+            <text class="node-sub" x="300" y="498" text-anchor="middle">vinfast-hr-mcp-server</text>
+
+            <line class="flow-line" x1="300" y1="518" x2="300" y2="552" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="160" y="554" width="280" height="64" rx="12"></rect>
+            <text class="node-title" x="300" y="580" text-anchor="middle">👁️ Observation Result</text>
+            <text class="node-sub" x="300" y="598" text-anchor="middle">status, message, dữ liệu tra cứu</text>
+
+            <path class="flow-line loop" d="M160,586 C60,586 40,500 40,347 C40,220 60,158 158,147" marker-end="url(#arrow-accent)"></path>
+          </svg>
+        </div>
+        <figcaption>Mỗi câu hỏi chạy tối đa <strong>5 vòng lặp</strong> (<code class="mono">MAX_ITERATIONS</code>). Agent chỉ dừng khi có Final Answer, chạm giới hạn vòng lặp, hoặc phát hiện đề xuất lại đúng tool + tham số đã thực thi trước đó (loop guard theo fingerprint) — đường nét đứt màu cam là vòng lặp quay lại Thought.</figcaption>
+      </div>
+
+      <div class="fig" style="margin-top:40px;">
+        <div class="fig-label">(b) So sánh hệ thống — ReAct Agent (MCP) vs Chatbot Baseline</div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 1040 360" role="img" aria-label="Sơ đồ so sánh: cùng một người dùng, ReAct Agent đi qua bốn thành phần MCP Server, Tool Executor và Mock DB để lấy dữ liệu thật, trong khi Chatbot Baseline chỉ có một lượt gọi LLM trực tiếp, không Tool, không vòng lặp, không MCP">
+            <text class="lane-label" x="210" y="20">Cấp độ 3 — ReAct Agent (MCP Enhanced)</text>
+            <text class="lane-label" x="210" y="258">Cấp độ 2 — Chatbot Baseline (không phải Agent)</text>
+
+            <rect class="node-box" x="16" y="118" width="130" height="128" rx="12"></rect>
+            <text class="node-title" x="81" y="178" text-anchor="middle">Người</text>
+            <text class="node-title" x="81" y="194" text-anchor="middle">dùng</text>
+
+            <path class="flow-line" d="M146,150 C175,140 175,90 205,62" marker-end="url(#arrow)"></path>
+            <path class="flow-line" d="M146,214 C175,224 175,278 205,300" marker-end="url(#arrow)"></path>
+
+            <rect class="node-box" x="206" y="30" width="170" height="64" rx="12"></rect>
+            <text class="node-title" x="291" y="56" text-anchor="middle" font-size="12.5">ReAct Agent Loop</text>
+            <text class="node-sub" x="291" y="74" text-anchor="middle">LLM: Gemini/OpenAI/Mock</text>
+            <line class="flow-line" x1="376" y1="62" x2="404" y2="62" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="406" y="30" width="170" height="64" rx="12"></rect>
+            <text class="node-title" x="491" y="56" text-anchor="middle" font-size="12.5">MCP Server</text>
+            <text class="node-sub" x="491" y="74" text-anchor="middle">vinfast-hr-mcp-server</text>
+            <line class="flow-line" x1="576" y1="62" x2="604" y2="62" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="606" y="30" width="170" height="64" rx="12"></rect>
+            <text class="node-title" x="691" y="56" text-anchor="middle" font-size="12.5">Tool Executor</text>
+            <text class="node-sub" x="691" y="74" text-anchor="middle">manage_employee_leave</text>
+            <line class="flow-line" x1="776" y1="62" x2="804" y2="62" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box" x="806" y="30" width="200" height="64" rx="12"></rect>
+            <text class="node-title" x="906" y="56" text-anchor="middle" font-size="12.5">Mock DB</text>
+            <text class="node-sub" x="906" y="74" text-anchor="middle">Nhân viên · Bảo hiểm</text>
+
+            <rect class="node-box muted" x="206" y="268" width="260" height="64" rx="12"></rect>
+            <text class="node-title" x="336" y="294" text-anchor="middle" font-size="12.5">LLM — system prompt cố định</text>
+            <text class="node-sub" x="336" y="312" text-anchor="middle">Không Tool</text>
+            <line class="flow-line" x1="466" y1="300" x2="494" y2="300" marker-end="url(#arrow)"></line>
+
+            <rect class="node-box muted" x="496" y="268" width="220" height="64" rx="12"></rect>
+            <text class="node-title" x="606" y="294" text-anchor="middle" font-size="12.5">Trả lời trực tiếp</text>
+            <text class="node-sub" x="606" y="312" text-anchor="middle">Không vòng lặp · Không MCP</text>
+          </svg>
+        </div>
+        <figcaption>Cùng một người dùng, hai lộ trình khác nhau: ReAct Agent đi qua 3 lớp phụ trợ (MCP Server → Tool Executor → Mock DB) để lấy dữ liệu thật trước khi trả lời; Chatbot Baseline chỉ có một lượt gọi LLM với system prompt cố định.</figcaption>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 4 ================= -->
+    <section id="s4" class="section">
+      <div class="section-kicker"><span class="section-num">04</span></div>
+      <h2>Bộ công cụ MCP đã dùng</h2>
+      <p class="section-sub">Toàn bộ 3 nghiệp vụ dưới đây chỉ là <strong>một</strong> tool schema duy nhất, được LLM gọi qua Native Tool Calling và thực thi qua MCP Server.</p>
+
+      <div class="card tool-head">
+        <span class="tool-name">manage_employee_leave</span>
+        <p class="tool-desc">Tra cứu phép năm, chính sách bảo hiểm hoặc tạo đơn nghỉ phép cho nhân viên VinFast.</p>
+        <span class="tool-common">Tham số chung bắt buộc: <strong style="color:var(--ink)">employee_id</strong></span>
+      </div>
+
+      <div class="tool-grid">
+        <div class="card tool-card">
+          <div class="stripe" style="background:var(--navy);"></div>
+          <div class="body">
+            <h3>leave_balance_query</h3>
+            <p class="purpose">Tra cứu số ngày phép năm còn lại của một nhân viên.</p>
+            <div class="param-row"><span class="param-chip req">employee_id</span></div>
+            <table class="mini-table">
+              <thead><tr><th>Mã NV</th><th>Nhân viên</th><th>Còn lại</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">NV2026001</td><td>Nguyễn Văn An · Sản xuất</td><td class="num">12 ngày</td></tr>
+                <tr><td class="mono">NV2026002</td><td>Trần Thị Bình · Kỹ thuật</td><td class="num">8 ngày</td></tr>
+              </tbody>
+            </table>
+            <p class="footnote" style="margin-top:0;">Trả về <code class="mono">NOT_FOUND</code> nếu mã nhân viên không tồn tại — không bịa số liệu.</p>
+          </div>
+        </div>
+
+        <div class="card tool-card">
+          <div class="stripe" style="background:var(--accent);"></div>
+          <div class="body">
+            <h3>insurance_policy_query</h3>
+            <p class="purpose">Tra cứu chính sách bảo hiểm áp dụng theo từng loại nghỉ.</p>
+            <div class="param-row"><span class="param-chip req">employee_id</span><span class="param-chip req">leave_type</span></div>
+            <table class="mini-table">
+              <thead><tr><th>Loại nghỉ</th><th>Quyền lợi</th><th>Trừ phép?</th></tr></thead>
+              <tbody>
+                <tr><td>phép năm</td><td>100% lương</td><td class="num">Có</td></tr>
+                <tr><td>ốm đau</td><td>75% lương</td><td class="num">Không</td></tr>
+                <tr><td>thai sản</td><td>6 tháng chế độ</td><td class="num">Không</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card tool-card">
+          <div class="stripe" style="background:var(--success);"></div>
+          <div class="body">
+            <h3>create_leave_request</h3>
+            <p class="purpose">Tạo đơn xin nghỉ sau khi đã xác thực chính sách và số dư phép.</p>
+            <div class="param-row">
+              <span class="param-chip req">employee_id</span><span class="param-chip req">leave_type</span>
+              <span class="param-chip req">start_date</span><span class="param-chip req">end_date</span><span class="param-chip req">reason</span>
+            </div>
+            <p class="footnote" style="margin-top:0;">Tự tính <code class="mono">working_days</code> (chỉ ngày làm việc Thứ 2–6), chặn tạo đơn nếu loại nghỉ trừ phép mà không đủ số dư.</p>
+            <span class="example-chip">LR-NV2026001-20261020-20261022</span>
+          </div>
+        </div>
+      </div>
+      <p class="tool-footnote">3 nghiệp vụ trên nằm trong đúng 1 Tool Schema (Native JSON Schema) của <code class="mono">TOOLS_SCHEMA</code> — không phải 3 tool tách biệt.</p>
+    </section>
+
+    <!-- ================= SECTION 5 ================= -->
+    <section id="s5" class="section">
+      <div class="section-kicker"><span class="section-num">05</span></div>
+      <h2>Demo trực tiếp: trace log từng bước</h2>
+      <p class="section-sub">TC02 và TC04 là log <strong>thật</strong>, đọc trực tiếp từ <code class="mono">docs/trace_waterfall.json</code> sau khi chạy <code class="mono">python src/app.py --all</code>. Tab "Dùng thử trực tiếp" chạy một bản mô phỏng cùng logic quyết định với <code class="mono">MockOfflineProvider</code> (<code class="mono">src/providers.py</code>) ngay trong trình duyệt — không cần API key, không cần server.</p>
+
+      <div class="scenario-row">
+        <button class="scenario-btn active" id="btn-tc02" onclick="selectScenario('tc02')">TC02 · Tra cứu phép năm <span class="complexity-badge">Medium</span></button>
+        <button class="scenario-btn" id="btn-tc04" onclick="selectScenario('tc04')">TC04 · Đa bước: Bảo hiểm + Phép năm + Tạo đơn <span class="complexity-badge">High</span></button>
+        <button class="scenario-btn" id="btn-live" onclick="selectScenario('live')">🧪 Dùng thử trực tiếp <span class="complexity-badge">Live</span></button>
+      </div>
+
+      <div class="demo-layout">
+        <div class="card query-card">
+          <div class="live-panel" id="live-panel" hidden>
+            <div class="live-field">
+              <label class="block-label" for="live-employee">Đăng nhập với vai trò nhân viên</label>
+              <select id="live-employee" onchange="updateLiveEmployeeInfo()">
+                <option value="NV2026001">NV2026001 — Nguyễn Văn An (Sản xuất)</option>
+                <option value="NV2026002">NV2026002 — Trần Thị Bình (Kỹ thuật)</option>
+              </select>
+              <p class="live-employee-info" id="live-employee-info"></p>
+            </div>
+            <div class="live-field">
+              <label class="block-label" for="live-question">Câu hỏi của bạn</label>
+              <textarea id="live-question" rows="3" placeholder="vd: Tôi còn lại bao nhiêu ngày phép năm?"></textarea>
+            </div>
+            <div class="suggestion-row">
+              <button type="button" class="suggestion-chip" onclick="fillLiveQuestion(this)" data-q="Quy trình xin nghỉ phép chung tại VinFast là gì?">Câu hỏi chung</button>
+              <button type="button" class="suggestion-chip" onclick="fillLiveQuestion(this)" data-q="Tôi còn lại bao nhiêu ngày phép năm?">Tra cứu phép năm</button>
+              <button type="button" class="suggestion-chip" onclick="fillLiveQuestion(this)" data-q="Tôi muốn xin nghỉ phép năm từ 20/10/2026 đến 22/10/2026 vì việc gia đình, hãy tạo đơn giúp tôi.">Tạo đơn phép năm</button>
+              <button type="button" class="suggestion-chip" onclick="fillLiveQuestion(this)" data-q="Tôi bị ốm, cần nghỉ từ 15/09/2026 đến 17/09/2026. Chính sách bảo hiểm ốm đau ra sao, có trừ phép năm không, hãy tạo đơn xin nghỉ giúp tôi.">Đa bước: ốm đau</button>
+            </div>
+            <p class="live-error" id="live-error" hidden>Vui lòng nhập câu hỏi trước khi chạy.</p>
+            <button class="ctrl-btn primary" onclick="runLive()">▶ Chạy Agent với câu hỏi này</button>
+            <p class="live-note">Mã nhân viên được hệ thống tự lấy từ phiên đăng nhập (select ở trên) — bạn không cần gõ mã NV vào câu hỏi. Độ trễ (ms) hiển thị là giá trị mô phỏng để giữ giao diện nhất quán với log thật.</p>
+          </div>
+          <div class="chip-row" id="query-chips"></div>
+          <div class="chat-bubble" id="query-text"></div>
+          <div class="controls">
+            <button class="ctrl-btn" id="btn-prev" onclick="prevStep()">◀ Bước trước</button>
+            <button class="ctrl-btn" id="btn-next" onclick="nextStep()">Bước tiếp ▶</button>
+          </div>
+          <div class="controls">
+            <button class="ctrl-btn primary" id="btn-auto" onclick="toggleAuto()">▶▶ Tự động phát</button>
+            <button class="ctrl-btn" onclick="resetDemo()">↺ Về đầu</button>
+          </div>
+          <div class="progress-line"><span id="step-counter">Bước 0/0</span></div>
+          <div class="total-tile"><span>Tổng độ trễ đã xử lý</span><span class="num" id="total-latency">0.00 ms</span></div>
+        </div>
+
+        <div id="step-list" class="step-list"></div>
+      </div>
+
+      <p class="footnote">Trường <code class="mono">thought</code> chỉ tồn tại ở bước Final Answer trong log thật — các bước gọi Tool được hiển thị đúng như dữ liệu gốc, không thêm suy nghĩ giả lập.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>VinFast HR Assistant — Bài Lab 3 · Chatbot vs ReAct Agent (MCP Enhanced)</span>
+    <span>Nguyễn Anh Tuấn · 2A202602700 · Dữ liệu minh hoạ mock, phục vụ mục đích học tập.</span>
+  </footer>
+</div>
+
+<script>
+  // ----- Scroll-spy nav -----
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.navlink'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main .section'));
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          var link = document.querySelector('.navlink[href="#' + entry.target.id + '"]');
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    sections.forEach(function(s){ spy.observe(s); });
+  }
+
+  // ----- Trace replay data (verbatim from docs/trace_waterfall.json) -----
+  var SCENARIOS = {
+    tc02: {
+      id: 'TC02', type: 'single_tool_query', complexity: 'Medium',
+      question: 'Tra cứu giúp tôi số ngày phép năm còn lại của nhân viên mã NV2026001.',
+      steps: [
+        { step:1, action_type:'TOOL_EXECUTION', tool_name:'manage_employee_leave',
+          arguments:{ action:'leave_balance_query', employee_id:'NV2026001' },
+          observation:{ status:'SUCCESS', action:'leave_balance_query', employee_id:'NV2026001',
+            employee:{ full_name:'Nguyễn Văn An', department:'Sản xuất', annual_leave_remaining:12 },
+            annual_leave_remaining:12, message:'Nhân viên NV2026001 còn 12 ngày phép năm.' },
+          latency_ms:416.65 },
+        { step:2, action_type:'FINAL_ANSWER',
+          thought:'Đã có đủ Observation để tổng hợp câu trả lời.',
+          output:'Nhân viên NV2026001 còn 12 ngày phép năm.',
+          latency_ms:318.54 }
+      ]
+    },
+    tc04: {
+      id: 'TC04', type: 'multi_step_reasoning', complexity: 'High',
+      question: 'Tôi là nhân viên NV2026002, tôi bị ốm và cần nghỉ từ ngày 15/09/2026 đến 17/09/2026. Cho tôi biết chính sách bảo hiểm ốm đau áp dụng thế nào, số ngày nghỉ này có bị trừ vào phép năm còn lại của tôi không, rồi giúp tôi tạo luôn đơn xin nghỉ ốm.',
+      steps: [
+        { step:1, action_type:'TOOL_EXECUTION', tool_name:'manage_employee_leave',
+          arguments:{ action:'insurance_policy_query', employee_id:'NV2026002', leave_type:'ốm đau' },
+          observation:{ status:'SUCCESS', action:'insurance_policy_query', employee_id:'NV2026002', leave_type:'ốm đau',
+            policy:{ benefit:'Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện.', deducted_from_annual_leave:false, note:'Nghỉ ốm không trừ phép năm trong mô phỏng này.' },
+            message:'Chính sách mock cho nghỉ ốm đau: Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện. Nghỉ ốm không trừ phép năm trong mô phỏng này.' },
+          latency_ms:484.16 },
+        { step:2, action_type:'TOOL_EXECUTION', tool_name:'manage_employee_leave',
+          arguments:{ action:'leave_balance_query', employee_id:'NV2026002' },
+          observation:{ status:'SUCCESS', action:'leave_balance_query', employee_id:'NV2026002',
+            employee:{ full_name:'Trần Thị Bình', department:'Kỹ thuật', annual_leave_remaining:8 },
+            annual_leave_remaining:8, message:'Nhân viên NV2026002 còn 8 ngày phép năm.' },
+          latency_ms:316.7 },
+        { step:3, action_type:'TOOL_EXECUTION', tool_name:'manage_employee_leave',
+          arguments:{ action:'create_leave_request', employee_id:'NV2026002', leave_type:'ốm đau', start_date:'2026-09-15', end_date:'2026-09-17', reason:'Nghỉ ốm theo yêu cầu của nhân viên.' },
+          observation:{ status:'SUCCESS', action:'create_leave_request', request_id:'LR-NV2026002-20260915-20260917',
+            employee_id:'NV2026002', employee_name:'Trần Thị Bình', leave_type:'ốm đau', start_date:'2026-09-15', end_date:'2026-09-17',
+            working_days:3, reason:'Nghỉ ốm theo yêu cầu của nhân viên.', deducted_from_annual_leave:false,
+            annual_leave_remaining:8, projected_annual_leave_remaining:8,
+            message:'Đã tạo đơn LR-NV2026002-20260915-20260917 cho NV2026002: nghỉ ốm đau 3 ngày làm việc.' },
+          latency_ms:230.32 },
+        { step:4, action_type:'FINAL_ANSWER',
+          thought:'Đã có đủ Observation để tổng hợp câu trả lời.',
+          output:'Chính sách mock cho nghỉ ốm đau: Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện. Nghỉ ốm không trừ phép năm trong mô phỏng này. Nhân viên NV2026002 còn 8 ngày phép năm. Đã tạo đơn LR-NV2026002-20260915-20260917 cho NV2026002: nghỉ ốm đau 3 ngày làm việc.',
+          latency_ms:236.01 }
+      ]
+    }
+  };
+
+  SCENARIOS.live = { id:'LIVE', type:'user_input', complexity:'—', question:'Chưa có câu hỏi nào được chạy.', steps: [] };
+
+  var SCENARIO_BUTTONS = { tc02:'btn-tc02', tc04:'btn-tc04', live:'btn-live' };
+
+  // ----- Client-side port of src/tools.py (mock employee/insurance data + tool execution) -----
+  var MOCK_EMPLOYEE_DB = {
+    NV2026001: { full_name:'Nguyễn Văn An', department:'Sản xuất', annual_leave_remaining:12 },
+    NV2026002: { full_name:'Trần Thị Bình', department:'Kỹ thuật', annual_leave_remaining:8 }
+  };
+  var MOCK_POLICIES = {
+    'phép năm': { benefit:'Hưởng 100% lương theo chính sách mock.', deducted_from_annual_leave:true, note:'Số ngày nghỉ được trừ vào phép năm còn lại.' },
+    'ốm đau': { benefit:'Hưởng 75% mức lương theo chính sách mock khi đủ điều kiện.', deducted_from_annual_leave:false, note:'Nghỉ ốm không trừ phép năm trong mô phỏng này.' },
+    'thai sản': { benefit:'Thời gian hưởng chế độ là 6 tháng theo chính sách mock.', deducted_from_annual_leave:false, note:'Nghỉ thai sản không trừ phép năm trong mô phỏng này.' }
+  };
+
+  function parseISODate(s){
+    var parts = s.split('-').map(Number);
+    return new Date(Date.UTC(parts[0], parts[1]-1, parts[2]));
+  }
+  function fmtYYYYMMDD(d){
+    var y = d.getUTCFullYear(), m = String(d.getUTCMonth()+1).padStart(2,'0'), day = String(d.getUTCDate()).padStart(2,'0');
+    return '' + y + m + day;
+  }
+  function countWorkingDays(start, end){
+    var count = 0;
+    var cur = new Date(start.getTime());
+    while (cur.getTime() <= end.getTime()){
+      var day = cur.getUTCDay();
+      if (day !== 0 && day !== 6) count++;
+      cur.setUTCDate(cur.getUTCDate()+1);
+    }
+    return count;
+  }
+
+  function executeManageEmployeeLeave(args){
+    var action = args.action;
+    var employeeId = (args.employee_id || '').toUpperCase();
+    var employee = MOCK_EMPLOYEE_DB[employeeId];
+    if (!employee){
+      return { status:'NOT_FOUND', employee_id: employeeId, message:"Không tìm thấy dữ liệu nhân viên có mã '" + employeeId + "'." };
+    }
+    if (action === 'leave_balance_query'){
+      return { status:'SUCCESS', action:action, employee_id:employeeId, employee:employee,
+        annual_leave_remaining: employee.annual_leave_remaining,
+        message:'Nhân viên ' + employeeId + ' còn ' + employee.annual_leave_remaining + ' ngày phép năm.' };
+    }
+    var leaveType = (args.leave_type || '').toLowerCase();
+    var policy = MOCK_POLICIES[leaveType];
+    if (!policy){
+      return { status:'VALIDATION_ERROR', message:"Loại nghỉ '" + leaveType + "' không hợp lệ. Các loại được hỗ trợ: phép năm, ốm đau, thai sản." };
+    }
+    if (action === 'insurance_policy_query'){
+      return { status:'SUCCESS', action:action, employee_id:employeeId, leave_type:leaveType, policy:policy,
+        message:'Chính sách mock cho nghỉ ' + leaveType + ': ' + policy.benefit + ' ' + policy.note };
+    }
+    if (action === 'create_leave_request'){
+      if (!args.reason) return { status:'VALIDATION_ERROR', message:"Action 'create_leave_request' yêu cầu trường 'reason'." };
+      if (!args.start_date || !args.end_date) return { status:'VALIDATION_ERROR', message:'Thiếu ngày bắt đầu/kết thúc.' };
+      var start = parseISODate(args.start_date), end = parseISODate(args.end_date);
+      if (start.getTime() > end.getTime()) return { status:'VALIDATION_ERROR', message:"'end_date' không được trước 'start_date'." };
+      var workingDays = countWorkingDays(start, end);
+      if (workingDays === 0) return { status:'VALIDATION_ERROR', message:'Khoảng nghỉ không có ngày làm việc.' };
+      var currentBalance = employee.annual_leave_remaining;
+      var deducted = policy.deducted_from_annual_leave;
+      if (deducted && workingDays > currentBalance){
+        return { status:'VALIDATION_ERROR', message:'Đơn yêu cầu ' + workingDays + ' ngày làm việc nhưng nhân viên chỉ còn ' + currentBalance + ' ngày phép năm.' };
+      }
+      var projected = deducted ? currentBalance - workingDays : currentBalance;
+      var requestId = 'LR-' + employeeId + '-' + fmtYYYYMMDD(start) + '-' + fmtYYYYMMDD(end);
+      return { status:'SUCCESS', action:action, request_id:requestId, employee_id:employeeId, employee_name:employee.full_name,
+        leave_type:leaveType, start_date:args.start_date, end_date:args.end_date, working_days:workingDays, reason:args.reason,
+        deducted_from_annual_leave:deducted, annual_leave_remaining:currentBalance, projected_annual_leave_remaining:projected,
+        message:'Đã tạo đơn ' + requestId + ' cho ' + employeeId + ': nghỉ ' + leaveType + ' ' + workingDays + ' ngày làm việc.' };
+    }
+    return { status:'UNKNOWN_ACTION', message:"Action '" + action + "' không được hỗ trợ." };
+  }
+
+  // ----- Client-side port of MockOfflineProvider.generate_with_tools (src/providers.py) -----
+  // Khác biệt có chủ đích: employee_id luôn lấy từ select "đăng nhập", không còn regex-tách từ câu hỏi.
+  function mockGenerateWithTools(promptOriginal, toolHistory, employeeId){
+    var promptLower = promptOriginal.toLowerCase();
+    var history = toolHistory || [];
+
+    var completedActions = {};
+    history.forEach(function(item){
+      if (item.observation && item.observation.status === 'SUCCESS') completedActions[item.arguments.action] = true;
+    });
+
+    if (history.length && history[history.length-1].observation.status !== 'SUCCESS'){
+      var obs = history[history.length-1].observation;
+      return { type:'text', content: obs.message || obs.error || 'Không thể hoàn tất yêu cầu.',
+        thought:'Tool báo lỗi; tôi phản hồi theo Observation và không bịa dữ liệu.' };
+    }
+
+    var isMultiStep = promptLower.indexOf('chính sách') !== -1 && promptLower.indexOf('phép') !== -1 &&
+      (promptLower.indexOf('tạo') !== -1 || promptLower.indexOf('đơn') !== -1);
+    var wantsCreation = promptLower.indexOf('tạo') !== -1 || promptLower.indexOf('xin nghỉ') !== -1;
+    var wantsPolicy = promptLower.indexOf('chính sách') !== -1 || promptLower.indexOf('bảo hiểm') !== -1;
+    var wantsBalance = promptLower.indexOf('còn lại') !== -1 || promptLower.indexOf('số ngày phép') !== -1;
+
+    if (promptLower.indexOf('quy trình') !== -1 && history.length === 0){
+      return { type:'text', content:'[Mock Agent Response]: Quy trình chung gồm chọn loại nghỉ, nhập thời gian và lý do, sau đó gửi đơn cho quản lý phê duyệt.',
+        thought:'Câu hỏi chung về quy trình HR, không cần gọi Tool.' };
+    }
+
+    var leaveType = promptLower.indexOf('ốm') !== -1 ? 'ốm đau' : 'phép năm';
+    var dateMatches = Array.from(promptOriginal.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g));
+    var isoDates = dateMatches.map(function(m){ return m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0'); });
+
+    function toolCall(action, extra){
+      var args = { action: action, employee_id: employeeId };
+      Object.assign(args, extra || {});
+      return { type:'tool_call', tool_name:'manage_employee_leave', arguments: args,
+        thought:"Cần thực hiện nghiệp vụ HR '" + action + "'." };
+    }
+
+    if (isMultiStep){
+      if (!completedActions['insurance_policy_query']) return toolCall('insurance_policy_query', { leave_type: leaveType });
+      if (!completedActions['leave_balance_query']) return toolCall('leave_balance_query');
+      if (!completedActions['create_leave_request']){
+        if (isoDates.length < 2){
+          return { type:'text', content:'Vui lòng cung cấp đủ ngày bắt đầu và ngày kết thúc.', thought:'Thiếu khoảng ngày để tạo đơn.' };
+        }
+        return toolCall('create_leave_request', { leave_type: leaveType, start_date: isoDates[0], end_date: isoDates[1],
+          reason: 'Nghỉ ốm theo yêu cầu của nhân viên.' });
+      }
+    } else if (wantsCreation && !completedActions['create_leave_request']){
+      if (isoDates.length < 2){
+        return { type:'text', content:'Vui lòng cung cấp mã nhân viên và khoảng ngày nghỉ.', thought:'Thiếu dữ liệu bắt buộc để tạo đơn.' };
+      }
+      return toolCall('create_leave_request', { leave_type: leaveType, start_date: isoDates[0], end_date: isoDates[1],
+        reason: promptLower.indexOf('gia đình') !== -1 ? 'Về quê giải quyết việc gia đình.' : 'Nghỉ theo yêu cầu của nhân viên.' });
+    } else if (wantsPolicy && !completedActions['insurance_policy_query']){
+      return toolCall('insurance_policy_query', { leave_type: leaveType });
+    } else if (wantsBalance && !completedActions['leave_balance_query']){
+      return toolCall('leave_balance_query');
+    }
+
+    if (history.length){
+      var messages = history.map(function(item){ return item.observation && item.observation.message; }).filter(Boolean);
+      return { type:'text', content: messages.join(' '), thought:'Đã có đủ Observation để tổng hợp câu trả lời.' };
+    }
+
+    return { type:'text', content:'[Mock Agent Response]: Quy trình chung gồm chọn loại nghỉ, nhập thời gian và lý do, sau đó gửi đơn cho quản lý phê duyệt.',
+      thought:'Câu hỏi chung về quy trình HR, không cần gọi Tool.' };
+  }
+
+  // ----- Client-side port of run_react_agent (src/app.py) -----
+  function runReactAgentSim(question, employeeId){
+    var MAX_ITERATIONS = 5;
+    var step = 0;
+    var finished = false;
+    var traceLogs = [];
+    var toolHistory = [];
+    var executedCalls = {};
+
+    while (step < MAX_ITERATIONS){
+      step++;
+      var llmResponse = mockGenerateWithTools(question, toolHistory, employeeId);
+      var latencyMs = Math.round((250 + Math.random()*380) * 100) / 100;
+      var thought = llmResponse.thought || 'Đang suy luận...';
+
+      if (llmResponse.type === 'text'){
+        traceLogs.push({ step:step, action_type:'FINAL_ANSWER', thought:thought, output: llmResponse.content, latency_ms: latencyMs });
+        finished = true;
+        break;
+      }
+
+      if (llmResponse.type === 'tool_call'){
+        var toolName = llmResponse.tool_name;
+        var args = llmResponse.arguments;
+        var fingerprint = toolName + '|' + JSON.stringify(args, Object.keys(args).sort());
+        if (executedCalls[fingerprint]){
+          traceLogs.push({ step:step, action_type:'FINAL_ANSWER', thought:'Phát hiện Tool Call trùng lặp.',
+            output:'Agent đã dừng vì provider lặp lại cùng một Tool Call.', latency_ms: latencyMs });
+          finished = true;
+          break;
+        }
+        executedCalls[fingerprint] = true;
+        var observation = executeManageEmployeeLeave(args);
+        traceLogs.push({ step:step, action_type:'TOOL_EXECUTION', tool_name:toolName, arguments:args, observation:observation, latency_ms: latencyMs });
+        toolHistory.push({ arguments: args, observation: observation });
+        continue;
+      }
+
+      traceLogs.push({ step:step, action_type:'FINAL_ANSWER', thought:'Không thể diễn giải phản hồi từ provider.',
+        output:'Provider trả về loại phản hồi không hợp lệ.', latency_ms: latencyMs });
+      finished = true;
+      break;
+    }
+
+    if (!finished){
+      traceLogs.push({ step: MAX_ITERATIONS + 1, action_type:'FINAL_ANSWER', thought:'Đã đạt giới hạn vòng lặp.',
+        output:'Agent chưa hoàn tất yêu cầu sau ' + MAX_ITERATIONS + ' bước.', latency_ms: 0 });
+    }
+    return traceLogs;
+  }
+
+  function updateLiveEmployeeInfo(){
+    var id = document.getElementById('live-employee').value;
+    var emp = MOCK_EMPLOYEE_DB[id];
+    document.getElementById('live-employee-info').textContent = 'Còn lại ' + emp.annual_leave_remaining + ' ngày phép năm · ' + emp.department;
+  }
+
+  function fillLiveQuestion(btn){
+    document.getElementById('live-question').value = btn.getAttribute('data-q');
+    document.getElementById('live-error').hidden = true;
+  }
+
+  function runLive(){
+    var employeeId = document.getElementById('live-employee').value;
+    var question = document.getElementById('live-question').value.trim();
+    var errorEl = document.getElementById('live-error');
+    if (!question){ errorEl.hidden = false; return; }
+    errorEl.hidden = true;
+    stopAuto();
+    var steps = runReactAgentSim(question, employeeId);
+    SCENARIOS.live = { id:'LIVE', type:'user_input', complexity: employeeId, question: question, steps: steps };
+    currentKey = 'live';
+    toggleAuto();
+  }
+
+  var currentKey = 'tc02';
+  var revealCount = SCENARIOS[currentKey].steps.length;
+  var autoTimer = null;
+
+  function fmtMs(n){ return n.toFixed(2) + ' ms'; }
+
+  function buildObsChips(obs){
+    var chips = [];
+    if (obs.annual_leave_remaining !== undefined) chips.push('Còn lại: ' + obs.annual_leave_remaining + ' ngày');
+    if (obs.request_id) chips.push('Mã đơn: ' + obs.request_id);
+    if (obs.working_days !== undefined) chips.push(obs.working_days + ' ngày làm việc');
+    if (obs.policy) chips.push(obs.policy.deducted_from_annual_leave ? 'Trừ phép năm' : 'Không trừ phép năm');
+    return chips;
+  }
+
+  function stepCardHTML(step){
+    var latency = '<span class="latency-badge">' + fmtMs(step.latency_ms) + '</span>';
+    var idx = '<span class="step-idx">Bước ' + step.step + '</span>';
+    if (step.action_type === 'TOOL_EXECUTION'){
+      var argRows = Object.keys(step.arguments).map(function(k){
+        return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + step.arguments[k] + '</span></div>';
+      }).join('');
+      var obs = step.observation;
+      var statusClass = obs.status === 'SUCCESS' ? 'success' : 'danger';
+      var chips = buildObsChips(obs).map(function(c){ return '<span class="obs-chip">' + c + '</span>'; }).join('');
+      var raw = JSON.stringify({ arguments: step.arguments, observation: obs }, null, 2);
+      return '<div class="card step-card">' +
+        '<div class="head">' + idx + '<span class="step-kind">⚡ Action → 👁️ Observation</span>' + latency + '</div>' +
+        '<div class="content">' +
+          '<div><div class="block-label">Action · ' + step.tool_name + '</div><div class="kv-list">' + argRows + '</div></div>' +
+          '<div><div class="block-label">Observation</div>' +
+            '<span class="status-badge ' + statusClass + '">' + obs.status + '</span> ' +
+            '<p class="obs-message" style="display:inline">' + obs.message + '</p>' +
+            (chips ? '<div class="obs-chips" style="margin-top:8px;">' + chips + '</div>' : '') +
+          '</div>' +
+          '<details class="raw"><summary>Xem JSON thô</summary><pre>' + raw + '</pre></details>' +
+        '</div>' +
+      '</div>';
+    } else {
+      var rawF = JSON.stringify({ thought: step.thought, output: step.output }, null, 2);
+      return '<div class="card step-card">' +
+        '<div class="head">' + idx + '<span class="step-kind">🧠 Thought → 🏁 Final Answer</span>' + latency + '</div>' +
+        '<div class="content">' +
+          '<div><div class="block-label">Thought</div><p>' + step.thought + '</p></div>' +
+          '<div class="final-block"><div class="block-label">Final Answer</div><p class="obs-message">' + step.output + '</p></div>' +
+          '<details class="raw"><summary>Xem JSON thô</summary><pre>' + rawF + '</pre></details>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  function render(){
+    var sc = SCENARIOS[currentKey];
+    Object.keys(SCENARIO_BUTTONS).forEach(function(key){
+      document.getElementById(SCENARIO_BUTTONS[key]).classList.toggle('active', currentKey === key);
+    });
+    document.getElementById('live-panel').hidden = (currentKey !== 'live');
+
+    document.getElementById('query-chips').innerHTML =
+      '<span class="chip">' + sc.id + '</span><span class="chip">' + sc.type + '</span><span class="chip">' + sc.complexity + '</span>';
+    document.getElementById('query-text').textContent = sc.question;
+
+    var shown = sc.steps.slice(0, revealCount);
+    var list = document.getElementById('step-list');
+    if (shown.length === 0){
+      if (sc.steps.length === 0){
+        list.innerHTML = '<div class="empty-hint">Nhập câu hỏi ở trên và bấm "Chạy Agent" để xem Agent suy luận theo thời gian thực.</div>';
+      } else {
+        list.innerHTML = '<div class="empty-hint">Nhấn "Bước tiếp ▶" hoặc "Tự động phát" để bắt đầu phát lại trace log.</div>';
+      }
+    } else {
+      list.innerHTML = shown.map(stepCardHTML).join('');
+    }
+
+    document.getElementById('step-counter').textContent = 'Bước ' + revealCount + '/' + sc.steps.length;
+    var total = shown.reduce(function(sum, s){ return sum + s.latency_ms; }, 0);
+    document.getElementById('total-latency').textContent = fmtMs(total);
+
+    document.getElementById('btn-prev').disabled = revealCount <= 0;
+    document.getElementById('btn-next').disabled = revealCount >= sc.steps.length;
+  }
+
+  function selectScenario(key){
+    stopAuto();
+    currentKey = key;
+    revealCount = SCENARIOS[key].steps.length;
+    render();
+  }
+
+  function nextStep(){
+    var total = SCENARIOS[currentKey].steps.length;
+    if (revealCount < total){ revealCount++; render(); }
+  }
+
+  function prevStep(){
+    if (revealCount > 0){ revealCount--; render(); }
+  }
+
+  function resetDemo(){
+    stopAuto();
+    revealCount = 0;
+    render();
+  }
+
+  function stopAuto(){
+    if (autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+    document.getElementById('btn-auto').textContent = '▶▶ Tự động phát';
+  }
+
+  function toggleAuto(){
+    if (autoTimer){ stopAuto(); return; }
+    revealCount = 0; render();
+    document.getElementById('btn-auto').textContent = '⏸ Dừng tự động';
+    autoTimer = setInterval(function(){
+      var total = SCENARIOS[currentKey].steps.length;
+      if (revealCount < total){ revealCount++; render(); }
+      else { stopAuto(); }
+    }, 1600);
+  }
+
+  updateLiveEmployeeInfo();
+  render();
+</script>
+</body>
+</html>
