@@ -30,22 +30,54 @@ TOOLS_SCHEMA = [
     # --------------------------------------------------------------------------
     # TODO 1.2: HỌC VIÊN HOÀN THIỆN TOOL SCHEMA CHO 'schedule_appointment'
     # 🎯 YÊU CẦU THIẾT KẾ SCHEMA (JSON SCHEMA STANDARD):
-    # 1. Tool dùng để đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.
+    # 1. Tool dùng để Tra cứu ngày phép còn lại, chính sách bảo hiểm và tạo đơn xin nghỉ phép.
     # 2. Thiết kế các tham số (properties) để LLM trích xuất:
-    #    - student_id (string): Mã sinh viên cần đặt lịch (ví dụ: 'SV2026001')
-    #    - datetime_str (string): Thời gian hẹn (ví dụ: '14:00 15/09/2026')
-    #    - advisor_name (string): Tên cố vấn học tập
+    #    - employee_id (string): Mã nhân viên cần tra cứu hoặc tạo đơn (ví dụ: 'NV2026001')
+    #    - leave_type (string): Loại nghỉ phép hoặc chế độ bảo hiểm cần tra cứu (ví dụ: 'phép năm', 'ốm đau', 'thai sản')
+    #    - start_date (string): Ngày bắt đầu nghỉ theo định dạng YYYY-MM-DD
+    #    - end_date (string): Ngày kết thúc nghỉ theo định dạng YYYY-MM-DD
+    #    - reason (string): Lý do xin nghỉ phép
     # 3. Khai báo danh sách các trường bắt buộc (required).
     # --------------------------------------------------------------------------
     {
         "name": "schedule_appointment",
-        "description": "Đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.",
+        "description": "Tra cứu ngày phép còn lại, chính sách bảo hiểm và tạo đơn xin nghỉ phép.",
         "parameters": {
             "type": "object",
             "properties": {
-                # TODO 1.2: Khai báo các thuộc tính tham số cho Tool tại đây...
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "leave_balance_query",
+                        "insurance_policy_query",
+                        "create_leave_request"
+                    ],
+                    "description": "Nghiệp vụ nhân sự cần thực hiện."
+                },
+                "employee_id": {
+                    "type": "string",
+                    "description": "Mã nhân viên VinFast cần tra cứu hoặc tạo đơn."
+                },
+                "leave_type": {
+                    "type": "string",
+                    "description": "Loại nghỉ phép hoặc chế độ bảo hiểm cần tra cứu, ví dụ: phép năm, ốm đau, thai sản."
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Ngày bắt đầu nghỉ theo định dạng YYYY-MM-DD."
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Ngày kết thúc nghỉ theo định dạng YYYY-MM-DD."
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Lý do xin nghỉ phép."
+                }
             },
-            "required": [] # TODO 1.2: Khai báo danh sách các trường bắt buộc tại đây...
+            "required": ["action", "employee_id"]
         }
     }
 ]
